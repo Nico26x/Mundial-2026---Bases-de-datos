@@ -17,11 +17,13 @@ public class AuthService {
 
     // Método para autenticar al usuario
     public boolean autenticar(String nombreUsuario, String contrasenaHash) throws SQLException {
-        for (Usuario usuario : usuarioDAO.obtenerUsuarios()) {
-            if (usuario.getNombreUsuario().equals(nombreUsuario) && usuario.getContrasenaHash().equals(contrasenaHash)) {
-                sessionManager.login(usuario);
-                return true;
-            }
+        // Obtener el usuario por nombre de usuario desde la base de datos
+        Usuario usuario = usuarioDAO.obtenerUsuarioPorNombre(nombreUsuario);
+
+        // Verificar si el usuario existe y la contraseña es correcta
+        if (usuario != null && usuario.getContrasenaHash().equals(contrasenaHash)) {
+            sessionManager.login(usuario);
+            return true;
         }
         return false;
     }
@@ -39,5 +41,18 @@ public class AuthService {
     // Verificar si el usuario tiene el rol adecuado
     public boolean tieneRol(String rol) {
         return sessionManager.tieneRol(rol);
+    }
+
+    // Métodos adicionales si necesitas más validaciones en el futuro
+    public boolean esAdministrador() {
+        return tieneRol("Administrador");
+    }
+
+    public boolean esUsuarioTradicional() {
+        return tieneRol("Tradicional");
+    }
+
+    public boolean esUsuarioEsporadico() {
+        return tieneRol("Esporádico");
     }
 }
