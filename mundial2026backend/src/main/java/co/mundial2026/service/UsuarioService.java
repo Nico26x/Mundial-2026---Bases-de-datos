@@ -4,12 +4,11 @@ import co.mundial2026.dao.UsuarioDAO;
 import co.mundial2026.model.Usuario;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class UsuarioService {
-    
+
     private final UsuarioDAO usuarioDAO;
-    
+
     public UsuarioService() {
         usuarioDAO = new UsuarioDAO();
     }
@@ -19,19 +18,16 @@ public class UsuarioService {
         usuarioDAO.agregarUsuario(usuario);
     }
 
-    // Método para obtener todos los usuarios
-    public List<Usuario> obtenerUsuarios() throws SQLException {
-        return usuarioDAO.obtenerUsuarios();
-    }
+    // Método para validar el login de un usuario
+    public boolean validarLogin(String nombreUsuario, String contrasenaHash) throws SQLException {
+        // Obtenemos el usuario desde la base de datos
+        Usuario usuario = usuarioDAO.obtenerUsuarioPorNombre(nombreUsuario);
 
-    // Método para verificar si el usuario y la contraseña son correctos
-    public boolean verificarLogin(String nombreUsuario, String contrasenaHash) throws SQLException {
-        List<Usuario> usuarios = usuarioDAO.obtenerUsuarios();
-        for (Usuario usuario : usuarios) {
-            if (usuario.getNombreUsuario().equals(nombreUsuario) && usuario.getContrasenaHash().equals(contrasenaHash)) {
-                return true; // Login correcto
-            }
+        // Si el usuario existe y la contraseña es correcta, retornamos true
+        if (usuario != null && usuario.getContrasenaHash().equals(contrasenaHash)) {
+            return true;
         }
-        return false; // Login incorrecto
+
+        return false; // Si no coincide, retornamos false
     }
 }

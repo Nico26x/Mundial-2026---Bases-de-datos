@@ -9,7 +9,7 @@ public class DatabaseConnection {
     // URL de conexión a la base de datos
     private static final String URL = "jdbc:mysql://localhost:3306/Mundial2026"; // Asegúrate de que la base de datos esté creada
     private static final String USER = "root"; // Cambia por el usuario de tu base de datos
-    private static final String PASSWORD = "1090273004"; // Cambia por la contraseña de tu base de datos
+    private static final String PASSWORD = "12345"; // Cambia por la contraseña de tu base de datos
     
     // Conexión a la base de datos
     public static Connection getConnection() throws SQLException {

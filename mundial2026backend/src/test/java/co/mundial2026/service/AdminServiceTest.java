@@ -13,23 +13,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AdminServiceTest {
 
-    private AdminService adminService; // Asegúrate de que esta variable esté declarada
+    private AdminService adminService;
     private AuthService authService;
     private UsuarioDAO usuarioDAO;
 
     @BeforeEach
     void setUp() {
-        // Inicializar las dependencias antes de cada prueba
-        adminService = new AdminService(); // Asegúrate de que adminService esté inicializado
+        adminService = new AdminService();
         authService = new AuthService();
         usuarioDAO = new UsuarioDAO();
 
         try {
-            // Asegúrate de que 'fechaCreacion' se inicialice correctamente
             usuarioDAO.agregarUsuario(new Usuario(1, "admin", "adminhashedpassword", "Administrador", LocalDateTime.now()));
             usuarioDAO.agregarUsuario(new Usuario(2, "user", "userhashedpassword", "Tradicional", LocalDateTime.now()));
 
-            // Autenticamos al usuario admin
             authService.autenticar("admin", "adminhashedpassword");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,7 +41,6 @@ class AdminServiceTest {
 
     @Test
     void testAccionNoPermitidaParaUsuarioTradicional() {
-        // Autenticamos a un usuario tradicional
         try {
             authService.autenticar("user", "userhashedpassword");
         } catch (SQLException e) {
