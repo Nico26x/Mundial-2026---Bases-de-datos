@@ -4,6 +4,11 @@ import co.mundial2026.model.Equipo;
 import co.mundial2026.security.DatabaseConnection;
 
 import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,5 +48,39 @@ public class EquipoDAO {
             }
         }
         return equipos;
+    }
+
+    public void eliminarEquipo(int idEquipo) throws SQLException {
+    String sql = "DELETE FROM Equipo WHERE id_equipo = ?";
+
+    try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, idEquipo);
+        stmt.executeUpdate();
+    }
+}
+
+    public void actualizarEquipo(Equipo equipo) throws SQLException {
+        String sql = """
+                UPDATE Equipo
+                SET nombre = ?,
+                    pais = ?,
+                    valor_total_equipo = ?,
+                    id_confederacion = ?
+                WHERE id_equipo = ?
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, equipo.getNombre());
+            stmt.setString(2, equipo.getPais());
+            stmt.setDouble(3, equipo.getValorTotalEquipo());
+            stmt.setInt(4, equipo.getIdConfederacion());
+            stmt.setInt(5, equipo.getIdEquipo());
+
+            stmt.executeUpdate();
+        }
     }
 }

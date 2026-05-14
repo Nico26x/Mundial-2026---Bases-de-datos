@@ -73,6 +73,7 @@ public class MainFrame extends JFrame {
         panelSesion.add(lblRol);
 
         JButton btnInicio = crearBotonSidebar("Inicio");
+        JButton btnEquipos = crearBotonSidebar("Equipos");
         JButton btnJugadores = crearBotonSidebar("Jugadores");
         JButton btnPartidos = crearBotonSidebar("Partidos");
         JButton btnConsultas = crearBotonSidebar("Consultas");
@@ -98,6 +99,9 @@ public class MainFrame extends JFrame {
         btnUsuarios.addActionListener(e ->
                 mostrarVista("Usuarios", "Administración de usuarios", crearPlaceholderPanel("Usuarios")));
 
+        btnEquipos.addActionListener(e ->
+                mostrarVista("Equipos", "Gestión de equipos", new EquipoPanel()));
+
         btnCerrarSesion.addActionListener(e -> cerrarSesion());
 
         sidebar.add(lblMarca);
@@ -108,6 +112,8 @@ public class MainFrame extends JFrame {
         sidebar.add(Box.createVerticalStrut(24));
 
         sidebar.add(btnInicio);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(btnEquipos);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(btnJugadores);
         sidebar.add(Box.createVerticalStrut(10));

@@ -1,58 +1,44 @@
 package co.mundial2026.view;
 
-import co.mundial2026.dao.JugadorDAO;
-import co.mundial2026.model.Jugador;
 import co.mundial2026.dao.EquipoDAO;
 import co.mundial2026.model.Equipo;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableRowSorter;
-import javax.swing.RowFilter;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.util.regex.Pattern;
-import java.util.HashMap;
-import java.util.Map;
 
-public class JugadorPanel extends JPanel {
+public class EquipoPanel extends JPanel {
 
-    private JTable tablaJugadores;
+    private JTable tablaEquipos;
     private DefaultTableModel modeloTabla;
     private TableRowSorter<DefaultTableModel> sorter;
 
     private JTextField txtBuscar;
-    private JButton btnNuevo;
-    private JButton btnEditar;
-    private JButton btnEliminar;
-    private JButton btnActualizar;
 
-    private JLabel lblTotalJugadores;
-    private JLabel lblValorPromedio;
-    private JLabel lblSub21;
     private JLabel lblTotalEquipos;
+    private JLabel lblValorPromedio;
+    private JLabel lblConfederaciones;
 
-    private final JugadorDAO jugadorDAO;
     private final EquipoDAO equipoDAO;
-    private Map<Integer, String> mapaEquipos;
 
-    public JugadorPanel() {
-        this.jugadorDAO = new JugadorDAO();
+    public EquipoPanel() {
         this.equipoDAO = new EquipoDAO();
-        this.mapaEquipos = new HashMap<>();
 
         setLayout(new BorderLayout(0, 18));
         setBackground(AppTheme.NEGRO_PANEL);
-        setBorder(new EmptyBorder(0, 0, 0, 0));
 
         initComponents();
-        cargarJugadores();
+        cargarEquipos();
     }
 
     private void initComponents() {
@@ -77,7 +63,7 @@ public class JugadorPanel extends JPanel {
 
     private JPanel crearHeader() {
         HeaderPanel header = new HeaderPanel();
-        header.setPreferredSize(new Dimension(0, 160));
+        header.setPreferredSize(new Dimension(0, 155));
         header.setLayout(new BorderLayout());
         header.setBorder(new EmptyBorder(24, 28, 24, 28));
 
@@ -85,17 +71,17 @@ public class JugadorPanel extends JPanel {
         textos.setOpaque(false);
         textos.setLayout(new BoxLayout(textos, BoxLayout.Y_AXIS));
 
-        JLabel lblEtiqueta = new JLabel("PLAYER CENTER");
+        JLabel lblEtiqueta = new JLabel("TEAM CENTER");
         lblEtiqueta.setForeground(AppTheme.DORADO);
         lblEtiqueta.setFont(new Font("SansSerif", Font.BOLD, 12));
         lblEtiqueta.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblTitulo = new JLabel("Gestión de jugadores");
+        JLabel lblTitulo = new JLabel("Gestión de equipos");
         lblTitulo.setForeground(AppTheme.BLANCO);
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 32));
         lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblDescripcion = new JLabel("Administra la información deportiva, física y económica de los jugadores registrados.");
+        JLabel lblDescripcion = new JLabel("Administra selecciones, países, valor total y confederación.");
         lblDescripcion.setForeground(AppTheme.GRIS_TEXTO);
         lblDescripcion.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -123,7 +109,7 @@ public class JugadorPanel extends JPanel {
         txtBuscar.setCaretColor(AppTheme.BLANCO);
         txtBuscar.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        JLabel lblBuscar = new JLabel("Buscar jugador");
+        JLabel lblBuscar = new JLabel("Buscar equipo");
         lblBuscar.setForeground(AppTheme.GRIS_TEXTO);
         lblBuscar.setFont(new Font("SansSerif", Font.BOLD, 13));
 
@@ -136,17 +122,17 @@ public class JugadorPanel extends JPanel {
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                filtrarJugadores();
+                filtrarEquipos();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                filtrarJugadores();
+                filtrarEquipos();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                filtrarJugadores();
+                filtrarEquipos();
             }
         });
 
@@ -156,18 +142,16 @@ public class JugadorPanel extends JPanel {
     }
 
     private JPanel crearTarjetasResumen() {
-        JPanel panel = new JPanel(new GridLayout(1, 4, 14, 0));
+        JPanel panel = new JPanel(new GridLayout(1, 3, 14, 0));
         panel.setOpaque(false);
 
-        lblTotalJugadores = new JLabel("0");
-        lblValorPromedio = new JLabel("$0");
-        lblSub21 = new JLabel("0");
         lblTotalEquipos = new JLabel("0");
+        lblValorPromedio = new JLabel("$0");
+        lblConfederaciones = new JLabel("6");
 
-        panel.add(crearTarjetaResumen("Total jugadores", lblTotalJugadores));
+        panel.add(crearTarjetaResumen("Total equipos", lblTotalEquipos));
         panel.add(crearTarjetaResumen("Valor promedio", lblValorPromedio));
-        panel.add(crearTarjetaResumen("Jugadores sub-21", lblSub21));
-        panel.add(crearTarjetaResumen("Equipos registrados", lblTotalEquipos));
+        panel.add(crearTarjetaResumen("Confederaciones", lblConfederaciones));
 
         return panel;
     }
@@ -201,47 +185,42 @@ public class JugadorPanel extends JPanel {
         modeloTabla = new DefaultTableModel();
         modeloTabla.addColumn("ID");
         modeloTabla.addColumn("Nombre");
-        modeloTabla.addColumn("Fecha nacimiento");
-        modeloTabla.addColumn("Edad");
-        modeloTabla.addColumn("Posición");
-        modeloTabla.addColumn("Peso");
-        modeloTabla.addColumn("Estatura");
-        modeloTabla.addColumn("Valor mercado");
-        modeloTabla.addColumn("Equipo");
-        modeloTabla.addColumn("ID Equipo");
+        modeloTabla.addColumn("País");
+        modeloTabla.addColumn("Valor total");
+        modeloTabla.addColumn("Confederación");
+        modeloTabla.addColumn("ID Confederación");
 
-        tablaJugadores = new JTable(modeloTabla);
+        tablaEquipos = new JTable(modeloTabla);
         sorter = new TableRowSorter<>(modeloTabla);
-        tablaJugadores.setRowSorter(sorter);
-        if (tablaJugadores.getColumnModel().getColumnCount() > 9) {
-            tablaJugadores.getColumnModel().getColumn(9).setMinWidth(0);
-            tablaJugadores.getColumnModel().getColumn(9).setMaxWidth(0);
-            tablaJugadores.getColumnModel().getColumn(9).setWidth(0);
-        }
-        tablaJugadores.setRowHeight(34);
-        tablaJugadores.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        tablaJugadores.setForeground(AppTheme.BLANCO);
-        tablaJugadores.setBackground(new Color(18, 22, 34));
-        tablaJugadores.setSelectionBackground(new Color(224, 182, 77));
-        tablaJugadores.setSelectionForeground(AppTheme.NEGRO_FONDO);
-        tablaJugadores.setGridColor(new Color(45, 50, 62));
-        tablaJugadores.setShowVerticalLines(false);
+        tablaEquipos.setRowSorter(sorter);
 
-        JTableHeader header = tablaJugadores.getTableHeader();
+        tablaEquipos.getColumnModel().getColumn(5).setMinWidth(0);
+        tablaEquipos.getColumnModel().getColumn(5).setMaxWidth(0);
+        tablaEquipos.getColumnModel().getColumn(5).setWidth(0);
+
+        tablaEquipos.setRowHeight(34);
+        tablaEquipos.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tablaEquipos.setForeground(AppTheme.BLANCO);
+        tablaEquipos.setBackground(new Color(18, 22, 34));
+        tablaEquipos.setSelectionBackground(AppTheme.DORADO);
+        tablaEquipos.setSelectionForeground(AppTheme.NEGRO_FONDO);
+        tablaEquipos.setGridColor(new Color(45, 50, 62));
+        tablaEquipos.setShowVerticalLines(false);
+
+        JTableHeader header = tablaEquipos.getTableHeader();
         header.setBackground(new Color(28, 33, 45));
         header.setForeground(AppTheme.BLANCO);
         header.setFont(new Font("SansSerif", Font.BOLD, 13));
         header.setPreferredSize(new Dimension(0, 38));
 
-        JScrollPane scrollPane = new JScrollPane(tablaJugadores);
+        JScrollPane scrollPane = new JScrollPane(tablaEquipos);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(new Color(18, 22, 34));
-
         scrollPane.getVerticalScrollBar().setUI(new DarkScrollBarUI());
         scrollPane.getHorizontalScrollBar().setUI(new DarkScrollBarUI());
-
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
         scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 10));
+
         contenedor.add(scrollPane, BorderLayout.CENTER);
 
         return contenedor;
@@ -251,18 +230,18 @@ public class JugadorPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         panel.setOpaque(false);
 
-        btnNuevo = new RoundedButton("+ Nuevo jugador", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
-        btnEditar = new RoundedButton("Editar", new Color(38, 47, 66), AppTheme.BLANCO);
-        btnEliminar = new RoundedButton("Eliminar", new Color(90, 20, 28), AppTheme.BLANCO);
-        btnActualizar = new RoundedButton("Actualizar", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
+        RoundedButton btnNuevo = new RoundedButton("+ Nuevo equipo", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
+        RoundedButton btnEditar = new RoundedButton("Editar", new Color(38, 47, 66), AppTheme.BLANCO);
+        RoundedButton btnEliminar = new RoundedButton("Eliminar", new Color(90, 20, 28), AppTheme.BLANCO);
+        RoundedButton btnActualizar = new RoundedButton("Actualizar", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
 
-        btnNuevo.addActionListener(e -> abrirFormularioNuevoJugador());
+        btnNuevo.addActionListener(e -> abrirFormularioNuevoEquipo());
 
-        btnEditar.addActionListener(e -> editarJugadorSeleccionado());
+        btnEditar.addActionListener(e -> editarEquipoSeleccionado());
 
-        btnEliminar.addActionListener(e -> eliminarJugadorSeleccionado());
+        btnEliminar.addActionListener(e -> eliminarEquipoSeleccionado());
 
-        btnActualizar.addActionListener(e -> cargarJugadores());
+        btnActualizar.addActionListener(e -> cargarEquipos());
 
         panel.add(btnNuevo);
         panel.add(btnEditar);
@@ -272,64 +251,167 @@ public class JugadorPanel extends JPanel {
         return panel;
     }
 
-    private void cargarJugadores() {
+    private void cargarEquipos() {
         modeloTabla.setRowCount(0);
-        cargarMapaEquipos();
 
         try {
-            List<Jugador> jugadores = jugadorDAO.obtenerJugadores();
+            List<Equipo> equipos = equipoDAO.obtenerEquipos();
 
             double sumaValores = 0;
-            int sub21 = 0;
 
-            for (Jugador jugador : jugadores) {
-                int edad = calcularEdadSimple(jugador.getFechaNacimiento().toString());
-
+            for (Equipo equipo : equipos) {
                 Object[] fila = {
-                        jugador.getIdJugador(),
-                        jugador.getNombre(),
-                        jugador.getFechaNacimiento(),
-                        edad,
-                        jugador.getPosicion(),
-                        jugador.getPeso(),
-                        jugador.getEstatura(),
-                        formatearValor(jugador.getValorMercado()),
-                        obtenerNombreEquipo(jugador.getIdEquipo()),
-                        jugador.getIdEquipo()
+                        equipo.getIdEquipo(),
+                        equipo.getNombre(),
+                        equipo.getPais(),
+                        formatearValor(equipo.getValorTotalEquipo()),
+                        obtenerNombreConfederacion(equipo.getIdConfederacion()),
+                        equipo.getIdConfederacion()
                 };
 
                 modeloTabla.addRow(fila);
-
-                sumaValores += jugador.getValorMercado();
-
-                if (edad < 21) {
-                    sub21++;
-                }
+                sumaValores += equipo.getValorTotalEquipo();
             }
 
-            lblTotalJugadores.setText(String.valueOf(jugadores.size()));
+            lblTotalEquipos.setText(String.valueOf(equipos.size()));
 
-            if (!jugadores.isEmpty()) {
-                double promedio = sumaValores / jugadores.size();
-                lblValorPromedio.setText("$" + String.format("%,.0f", promedio));
+            if (!equipos.isEmpty()) {
+                double promedio = sumaValores / equipos.size();
+                lblValorPromedio.setText(formatearValor(promedio));
             } else {
                 lblValorPromedio.setText("$0");
             }
 
-            lblSub21.setText(String.valueOf(sub21));
-            lblTotalEquipos.setText("—");
-
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Error al cargar jugadores:\n" + e.getMessage(),
+                    "Error al cargar equipos:\n" + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    private void filtrarJugadores() {
+    private void eliminarEquipoSeleccionado() {
+        int filaSeleccionada = tablaEquipos.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Debes seleccionar un equipo para eliminar.",
+                    "Sin selección",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        int filaModelo = tablaEquipos.convertRowIndexToModel(filaSeleccionada);
+        int idEquipo = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
+        String nombreEquipo = modeloTabla.getValueAt(filaModelo, 1).toString();
+
+        int confirmacion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Seguro que deseas eliminar el equipo " + nombreEquipo + "?\n\n" +
+                        "Si tiene jugadores asociados, la base de datos no permitirá eliminarlo.",
+                "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            try {
+                equipoDAO.eliminarEquipo(idEquipo);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Equipo eliminado correctamente.",
+                        "Eliminación exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+                cargarEquipos();
+
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "No se pudo eliminar el equipo.\n\n" +
+                                "Es posible que tenga jugadores, partidos o registros asociados.\n\n" +
+                                "Detalle: " + e.getMessage(),
+                        "Error al eliminar",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+
+    private void abrirFormularioNuevoEquipo() {
+        JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        EquipoFormDialog dialog = new EquipoFormDialog(ventanaPadre);
+        dialog.setVisible(true);
+
+        if (dialog.isGuardado()) {
+            cargarEquipos();
+        }
+    }
+
+    private void editarEquipoSeleccionado() {
+        int filaSeleccionada = tablaEquipos.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Debes seleccionar un equipo para editar.",
+                    "Sin selección",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        try {
+            int filaModelo = tablaEquipos.convertRowIndexToModel(filaSeleccionada);
+
+            int idEquipo = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
+            String nombre = modeloTabla.getValueAt(filaModelo, 1).toString();
+            String pais = modeloTabla.getValueAt(filaModelo, 2).toString();
+
+            String valorTexto = modeloTabla.getValueAt(filaModelo, 3).toString()
+                    .replace("$", "")
+                    .replace(",", "")
+                    .replace(".", "")
+                    .trim();
+
+            double valorTotal = Double.parseDouble(valorTexto);
+            int idConfederacion = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 5).toString());
+
+            Equipo equipo = new Equipo(
+                    idEquipo,
+                    nombre,
+                    pais,
+                    valorTotal,
+                    idConfederacion
+            );
+
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            EquipoFormDialog dialog = new EquipoFormDialog(ventanaPadre, equipo);
+            dialog.setVisible(true);
+
+            if (dialog.isGuardado()) {
+                cargarEquipos();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo abrir el formulario de edición.\n\nDetalle: " + e.getMessage(),
+                    "Error al editar",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private void filtrarEquipos() {
         String texto = txtBuscar.getText().trim();
 
         if (sorter == null) {
@@ -343,163 +425,22 @@ public class JugadorPanel extends JPanel {
         }
     }
 
-    private void abrirFormularioNuevoJugador() {
-        JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-        JugadorFormDialog dialog = new JugadorFormDialog(ventanaPadre);
-        dialog.setVisible(true);
-
-        if (dialog.isGuardado()) {
-            cargarJugadores();
-        }
-    }
-
-    private void eliminarJugadorSeleccionado() {
-        int filaSeleccionada = tablaJugadores.getSelectedRow();
-
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Debes seleccionar un jugador para eliminar.",
-                    "Sin selección",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        int filaModelo = tablaJugadores.convertRowIndexToModel(filaSeleccionada);
-        int idJugador = (int) modeloTabla.getValueAt(filaModelo, 0);
-        String nombreJugador = modeloTabla.getValueAt(filaModelo, 1).toString();
-
-        int confirmacion = JOptionPane.showConfirmDialog(
-                this,
-                "¿Seguro que deseas eliminar al jugador " + nombreJugador + "?",
-                "Confirmar eliminación",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
-
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            try {
-                jugadorDAO.eliminarJugador(idJugador);
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Jugador eliminado correctamente.",
-                        "Eliminación exitosa",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-
-                cargarJugadores();
-
-            } catch (SQLException e) {
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Error al eliminar jugador:\n" + e.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        }
-    }
-
-    private void editarJugadorSeleccionado() {
-        int filaSeleccionada = tablaJugadores.getSelectedRow();
-
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Debes seleccionar un jugador para editar.",
-                    "Sin selección",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return;
-        }
-
-        try {
-            int filaModelo = tablaJugadores.convertRowIndexToModel(filaSeleccionada);
-
-            int idJugador = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
-            String nombre = modeloTabla.getValueAt(filaModelo, 1).toString();
-            java.time.LocalDate fechaNacimiento = java.time.LocalDate.parse(modeloTabla.getValueAt(filaModelo, 2).toString());
-
-            // Columna 3 es Edad, por eso se salta.
-            String posicion = modeloTabla.getValueAt(filaModelo, 4).toString();
-            double peso = Double.parseDouble(modeloTabla.getValueAt(filaModelo, 5).toString());
-            double estatura = Double.parseDouble(modeloTabla.getValueAt(filaModelo, 6).toString());
-
-            String valorTexto = modeloTabla.getValueAt(filaModelo, 7).toString()
-                    .replace("$", "")
-                    .replace(",", "")
-                    .replace(".", "")
-                    .trim();
-
-            double valorMercado = Double.parseDouble(valorTexto);
-
-            // Columna 8 es nombre del equipo.
-            // Columna 9 es ID Equipo oculto.
-            int idEquipo = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 9).toString());
-
-            Jugador jugador = new Jugador(
-                    idJugador,
-                    nombre,
-                    fechaNacimiento,
-                    posicion,
-                    peso,
-                    estatura,
-                    valorMercado,
-                    idEquipo
-            );
-
-            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-            JugadorFormDialog dialog = new JugadorFormDialog(ventanaPadre, jugador);
-            dialog.setVisible(true);
-
-            if (dialog.isGuardado()) {
-                cargarJugadores();
-            }
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo abrir el formulario de edición.\n\nDetalle: " + e.getMessage(),
-                    "Error al editar",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    private int calcularEdadSimple(String fechaNacimiento) {
-        try {
-            int anioNacimiento = Integer.parseInt(fechaNacimiento.substring(0, 4));
-            return 2026 - anioNacimiento;
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private String obtenerNombreEquipo(int idEquipo) {
-        return mapaEquipos.getOrDefault(idEquipo, "Equipo " + idEquipo);
-    }
-
-    private void cargarMapaEquipos() {
-        mapaEquipos.clear();
-
-        try {
-            List<Equipo> equipos = equipoDAO.obtenerEquipos();
-
-            for (Equipo equipo : equipos) {
-                mapaEquipos.put(equipo.getIdEquipo(), equipo.getNombre());
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error al cargar nombres de equipos:\n" + e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+    private String obtenerNombreConfederacion(int idConfederacion) {
+        switch (idConfederacion) {
+            case 1:
+                return "UEFA";
+            case 2:
+                return "CONMEBOL";
+            case 3:
+                return "CONCACAF";
+            case 4:
+                return "CAF";
+            case 5:
+                return "AFC";
+            case 6:
+                return "OFC";
+            default:
+                return "Confederación " + idConfederacion;
         }
     }
 
