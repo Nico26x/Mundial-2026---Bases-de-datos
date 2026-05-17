@@ -81,26 +81,22 @@ public class MainFrame extends JFrame {
         JButton btnUsuarios = crearBotonSidebar("Usuarios");
         JButton btnCerrarSesion = crearBotonCerrarSesion("Cerrar sesión");
 
-        btnInicio.addActionListener(e ->
-                mostrarVista("Inicio", "Panel principal del sistema", crearLandingPanel()));
+        btnInicio.addActionListener(e -> mostrarVista("Inicio", "Panel principal del sistema", crearLandingPanel()));
 
-        btnJugadores.addActionListener(e ->
-                mostrarVista("Jugadores", "Gestión de jugadores", new JugadorPanel()));
+        btnJugadores.addActionListener(e -> mostrarVista("Jugadores", "Gestión de jugadores", new JugadorPanel()));
 
-        btnPartidos.addActionListener(e ->
-                mostrarVista("Partidos", "Gestión de partidos", crearPlaceholderPanel("Partidos")));
+        btnPartidos.addActionListener(e -> mostrarVista("Partidos", "Gestión de partidos", new PartidoPanel()));
 
-        btnConsultas.addActionListener(e ->
-                mostrarVista("Consultas", "Consultas del sistema", crearPlaceholderPanel("Consultas")));
+        btnConsultas.addActionListener(
+                e -> mostrarVista("Consultas", "Consultas del sistema", crearPlaceholderPanel("Consultas")));
 
-        btnReportes.addActionListener(e ->
-                mostrarVista("Reportes", "Reportes del sistema", crearPlaceholderPanel("Reportes")));
+        btnReportes.addActionListener(
+                e -> mostrarVista("Reportes", "Reportes del sistema", crearPlaceholderPanel("Reportes")));
 
-        btnUsuarios.addActionListener(e ->
-                mostrarVista("Usuarios", "Administración de usuarios", crearPlaceholderPanel("Usuarios")));
+        btnUsuarios.addActionListener(
+                e -> mostrarVista("Usuarios", "Administración de usuarios", crearPlaceholderPanel("Usuarios")));
 
-        btnEquipos.addActionListener(e ->
-                mostrarVista("Equipos", "Gestión de equipos", new EquipoPanel()));
+        btnEquipos.addActionListener(e -> mostrarVista("Equipos", "Gestión de equipos", new EquipoPanel()));
 
         btnCerrarSesion.addActionListener(e -> cerrarSesion());
 
@@ -195,84 +191,83 @@ public class MainFrame extends JFrame {
     }
 
     private JPanel crearHeroPrincipal() {
-    HeroPanel hero = new HeroPanel();
-    hero.setLayout(new BorderLayout());
-    hero.setBorder(new EmptyBorder(22, 26, 22, 26));
+        HeroPanel hero = new HeroPanel();
+        hero.setLayout(new BorderLayout());
+        hero.setBorder(new EmptyBorder(22, 26, 22, 26));
 
-    JPanel contenidoIzquierdo = new JPanel();
-    contenidoIzquierdo.setOpaque(false);
-    contenidoIzquierdo.setLayout(new BoxLayout(contenidoIzquierdo, BoxLayout.Y_AXIS));
+        JPanel contenidoIzquierdo = new JPanel();
+        contenidoIzquierdo.setOpaque(false);
+        contenidoIzquierdo.setLayout(new BoxLayout(contenidoIzquierdo, BoxLayout.Y_AXIS));
 
-    JLabel lblSmall = new JLabel("MUNDIAL 2026 · FIFA WORLD CUP");
-    lblSmall.setForeground(new Color(220, 225, 235));
-    lblSmall.setFont(new Font("SansSerif", Font.BOLD, 12));
-    lblSmall.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblSmall = new JLabel("MUNDIAL 2026 · FIFA WORLD CUP");
+        lblSmall.setForeground(new Color(220, 225, 235));
+        lblSmall.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblSmall.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-    JLabel lblTitulo = new JLabel("<html>CONTROL<br>CENTER</html>");
-    lblTitulo.setForeground(AppTheme.BLANCO);
-    lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 52));
-    lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblTitulo = new JLabel("<html>CONTROL<br>CENTER</html>");
+        lblTitulo.setForeground(AppTheme.BLANCO);
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 52));
+        lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-    JLabel lblTexto = new JLabel(
-            "<html>Gestiona jugadores, partidos, consultas y reportes<br>desde una sola plataforma con una experiencia visual moderna.</html>"
-    );
-    lblTexto.setForeground(new Color(220, 226, 235));
-    lblTexto.setFont(new Font("SansSerif", Font.PLAIN, 15));
-    lblTexto.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblTexto = new JLabel(
+                "<html>Gestiona jugadores, partidos, consultas y reportes<br>desde una sola plataforma con una experiencia visual moderna.</html>");
+        lblTexto.setForeground(new Color(220, 226, 235));
+        lblTexto.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        lblTexto.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-    RoundedButton btnPrincipal = new RoundedButton("Explorar sistema", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
-    btnPrincipal.setAlignmentX(Component.LEFT_ALIGNMENT);
-    btnPrincipal.addActionListener(e ->
-            JOptionPane.showMessageDialog(this, "Desde aquí seguimos conectando tus módulos."));
+        RoundedButton btnPrincipal = new RoundedButton("Explorar sistema", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
+        btnPrincipal.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnPrincipal.addActionListener(
+                e -> JOptionPane.showMessageDialog(this, "Desde aquí seguimos conectando tus módulos."));
 
-    JPanel puntos = new JPanel();
-    puntos.setOpaque(false);
-    puntos.setLayout(new BoxLayout(puntos, BoxLayout.Y_AXIS));
+        JPanel puntos = new JPanel();
+        puntos.setOpaque(false);
+        puntos.setLayout(new BoxLayout(puntos, BoxLayout.Y_AXIS));
 
-    puntos.add(crearPuntoIndicador(true));
-    puntos.add(Box.createVerticalStrut(10));
-    puntos.add(crearPuntoIndicador(false));
-    puntos.add(Box.createVerticalStrut(10));
-    puntos.add(crearPuntoIndicador(false));
-    puntos.add(Box.createVerticalStrut(10));
-    puntos.add(crearPuntoIndicador(false));
+        puntos.add(crearPuntoIndicador(true));
+        puntos.add(Box.createVerticalStrut(10));
+        puntos.add(crearPuntoIndicador(false));
+        puntos.add(Box.createVerticalStrut(10));
+        puntos.add(crearPuntoIndicador(false));
+        puntos.add(Box.createVerticalStrut(10));
+        puntos.add(crearPuntoIndicador(false));
 
-    JPanel centroTexto = new JPanel(new BorderLayout());
-    centroTexto.setOpaque(false);
-    centroTexto.add(puntos, BorderLayout.WEST);
+        JPanel centroTexto = new JPanel(new BorderLayout());
+        centroTexto.setOpaque(false);
+        centroTexto.add(puntos, BorderLayout.WEST);
 
-    JPanel bloqueTexto = new JPanel();
-    bloqueTexto.setOpaque(false);
-    bloqueTexto.setLayout(new BoxLayout(bloqueTexto, BoxLayout.Y_AXIS));
-    bloqueTexto.setBorder(new EmptyBorder(0, 18, 0, 0));
+        JPanel bloqueTexto = new JPanel();
+        bloqueTexto.setOpaque(false);
+        bloqueTexto.setLayout(new BoxLayout(bloqueTexto, BoxLayout.Y_AXIS));
+        bloqueTexto.setBorder(new EmptyBorder(0, 18, 0, 0));
 
-    bloqueTexto.add(lblSmall);
-    bloqueTexto.add(Box.createVerticalStrut(14));
-    bloqueTexto.add(lblTitulo);
-    bloqueTexto.add(Box.createVerticalStrut(18));
-    bloqueTexto.add(lblTexto);
-    bloqueTexto.add(Box.createVerticalStrut(20));
-    bloqueTexto.add(btnPrincipal);
+        bloqueTexto.add(lblSmall);
+        bloqueTexto.add(Box.createVerticalStrut(14));
+        bloqueTexto.add(lblTitulo);
+        bloqueTexto.add(Box.createVerticalStrut(18));
+        bloqueTexto.add(lblTexto);
+        bloqueTexto.add(Box.createVerticalStrut(20));
+        bloqueTexto.add(btnPrincipal);
 
-    centroTexto.add(bloqueTexto, BorderLayout.CENTER);
+        centroTexto.add(bloqueTexto, BorderLayout.CENTER);
 
-    contenidoIzquierdo.add(Box.createVerticalGlue());
-    contenidoIzquierdo.add(centroTexto);
-    contenidoIzquierdo.add(Box.createVerticalGlue());
+        contenidoIzquierdo.add(Box.createVerticalGlue());
+        contenidoIzquierdo.add(centroTexto);
+        contenidoIzquierdo.add(Box.createVerticalGlue());
 
-    JLabel lblJugador = crearImagenEscalada("/images/player_main.png", 360, 420);
-    lblJugador.setHorizontalAlignment(SwingConstants.RIGHT);
-    lblJugador.setVerticalAlignment(SwingConstants.BOTTOM);
+        JLabel lblJugador = crearImagenEscalada("/images/player_main.png", 360, 420);
+        lblJugador.setHorizontalAlignment(SwingConstants.RIGHT);
+        lblJugador.setVerticalAlignment(SwingConstants.BOTTOM);
 
-    JPanel panelImagen = new JPanel(new BorderLayout());
-    panelImagen.setOpaque(false);
-    panelImagen.add(lblJugador, BorderLayout.CENTER);
+        JPanel panelImagen = new JPanel(new BorderLayout());
+        panelImagen.setOpaque(false);
+        panelImagen.add(lblJugador, BorderLayout.CENTER);
 
-    hero.add(contenidoIzquierdo, BorderLayout.CENTER);
-    hero.add(panelImagen, BorderLayout.EAST);
+        hero.add(contenidoIzquierdo, BorderLayout.CENTER);
+        hero.add(panelImagen, BorderLayout.EAST);
 
-    return hero;
-}
+        return hero;
+    }
 
     private JPanel crearBarraInferior() {
         RoundedPanel barra = new RoundedPanel(22, new Color(16, 20, 31));
@@ -349,15 +344,15 @@ public class MainFrame extends JFrame {
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 30));
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel lblTexto = new JLabel("<html><div style='text-align:center;'>Este módulo está listo para conectarse con su vista real.</div></html>");
+        JLabel lblTexto = new JLabel(
+                "<html><div style='text-align:center;'>Este módulo está listo para conectarse con su vista real.</div></html>");
         lblTexto.setForeground(AppTheme.GRIS_TEXTO);
         lblTexto.setFont(new Font("SansSerif", Font.PLAIN, 15));
         lblTexto.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         RoundedButton btnVolver = new RoundedButton("Volver al inicio", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
         btnVolver.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnVolver.addActionListener(e ->
-                mostrarVista("Inicio", "Panel principal del sistema", crearLandingPanel()));
+        btnVolver.addActionListener(e -> mostrarVista("Inicio", "Panel principal del sistema", crearLandingPanel()));
 
         contenido.add(lblTitulo);
         contenido.add(Box.createVerticalStrut(12));
@@ -437,8 +432,7 @@ public class MainFrame extends JFrame {
                 this,
                 "¿Deseas cerrar la sesión actual?",
                 "Cerrar sesión",
-                JOptionPane.YES_NO_OPTION
-        );
+                JOptionPane.YES_NO_OPTION);
 
         if (opcion == JOptionPane.YES_OPTION) {
             dispose();
@@ -517,8 +511,7 @@ public class MainFrame extends JFrame {
             // fondo azul oscuro
             GradientPaint gpBlue = new GradientPaint(
                     0, 0, new Color(8, 20, 48),
-                    getWidth(), getHeight(), new Color(4, 10, 24)
-            );
+                    getWidth(), getHeight(), new Color(4, 10, 24));
             g2.setPaint(gpBlue);
             g2.fillRect(0, 0, getWidth(), getHeight());
 
@@ -533,8 +526,7 @@ public class MainFrame extends JFrame {
                     (int) (getWidth() * 0.60), 0,
                     new Color(220, 24, 34),
                     getWidth(), getHeight(),
-                    new Color(150, 12, 22)
-            );
+                    new Color(150, 12, 22));
             g2.setPaint(gpRed);
             g2.fillPolygon(poly);
 

@@ -3,7 +3,12 @@ package co.mundial2026.dao;
 import co.mundial2026.model.Partido;
 import co.mundial2026.security.DatabaseConnection;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,5 +56,45 @@ public class PartidoDAO {
             }
         }
         return partidos;
+    }
+
+    public void eliminarPartido(int idPartido) throws SQLException {
+        String sql = "DELETE FROM Partido WHERE id_partido = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idPartido);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void actualizarPartido(Partido partido) throws SQLException {
+        String sql = """
+                UPDATE Partido
+                SET fecha_hora = ?,
+                    id_estadio = ?,
+                    id_grupo = ?,
+                    id_equipo_local = ?,
+                    id_equipo_visitante = ?,
+                    goles_local = ?,
+                    goles_visitante = ?
+                WHERE id_partido = ?
+                """;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setTimestamp(1, Timestamp.valueOf(partido.getFechaHora()));
+            stmt.setInt(2, partido.getIdEstadio());
+            stmt.setInt(3, partido.getIdGrupo());
+            stmt.setInt(4, partido.getIdEquipoLocal());
+            stmt.setInt(5, partido.getIdEquipoVisitante());
+            stmt.setInt(6, partido.getGolesLocal());
+            stmt.setInt(7, partido.getGolesVisitante());
+            stmt.setInt(8, partido.getIdPartido());
+
+            stmt.executeUpdate();
+        }
     }
 }
