@@ -1,15 +1,15 @@
 package co.mundial2026;
 
+import co.mundial2026.view.DialogTheme;
 import co.mundial2026.view.LoginFrame;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class Main {
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            LoginFrame login = new LoginFrame();
-            login.setVisible(true);
+            DialogTheme.aplicarTema();
+            new LoginFrame().setVisible(true);
         });
     }
 }

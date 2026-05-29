@@ -12,7 +12,7 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-import javax.swing.RowFilter;
+
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
@@ -273,11 +273,9 @@ public class UsuarioPanel extends JPanel {
         RoundedButton btnEliminar = new RoundedButton("Eliminar", new Color(90, 20, 28), AppTheme.BLANCO);
         RoundedButton btnActualizar = new RoundedButton("Actualizar", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
 
-        btnNuevo.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Aquí conectaremos el formulario de nuevo usuario."));
+        btnNuevo.addActionListener(e -> abrirFormularioNuevoUsuario());
 
-        btnEditar.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Aquí conectaremos editar usuario."));
+        btnEditar.addActionListener(e -> editarUsuarioSeleccionado());
 
         btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
 
@@ -312,7 +310,7 @@ public class UsuarioPanel extends JPanel {
                     esporadicos++;
                 }
 
-                modeloTabla.addRow(new Object[]{
+                modeloTabla.addRow(new Object[] {
                         usuario.getIdUsuario(),
                         usuario.getNombreUsuario(),
                         usuario.getTipoUsuario(),
@@ -331,8 +329,7 @@ public class UsuarioPanel extends JPanel {
                     this,
                     "Error al cargar usuarios:\n" + e.getMessage(),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -344,8 +341,7 @@ public class UsuarioPanel extends JPanel {
                     this,
                     "Debes seleccionar un usuario para eliminar.",
                     "Sin selección",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -361,8 +357,7 @@ public class UsuarioPanel extends JPanel {
                     this,
                     "No puedes eliminar el usuario con el que tienes la sesión iniciada.",
                     "Acción no permitida",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -371,8 +366,7 @@ public class UsuarioPanel extends JPanel {
                     this,
                     "No se recomienda eliminar el usuario administrador principal.",
                     "Acción no permitida",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -382,8 +376,7 @@ public class UsuarioPanel extends JPanel {
                         "Si tiene registros de bitácora asociados, la base de datos no permitirá eliminarlo.",
                 "Confirmar eliminación",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+                JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
@@ -393,8 +386,7 @@ public class UsuarioPanel extends JPanel {
                         this,
                         "Usuario eliminado correctamente.",
                         "Eliminación exitosa",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                        JOptionPane.INFORMATION_MESSAGE);
 
                 cargarUsuarios();
 
@@ -405,9 +397,72 @@ public class UsuarioPanel extends JPanel {
                                 "Es posible que tenga registros de bitácora asociados.\n\n" +
                                 "Detalle: " + e.getMessage(),
                         "Error al eliminar",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                        JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private void abrirFormularioNuevoUsuario() {
+        JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        UsuarioFormDialog dialog = new UsuarioFormDialog(ventanaPadre);
+        dialog.setVisible(true);
+
+        if (dialog.isGuardado()) {
+            cargarUsuarios();
+        }
+    }
+
+    private void editarUsuarioSeleccionado() {
+        int filaSeleccionada = tablaUsuarios.getSelectedRow();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Debes seleccionar un usuario para editar.",
+                    "Sin selección",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            int filaModelo = tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
+
+            int idUsuario = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
+            String nombreUsuario = modeloTabla.getValueAt(filaModelo, 1).toString();
+            String tipoUsuario = modeloTabla.getValueAt(filaModelo, 2).toString();
+
+            Object fechaObjeto = modeloTabla.getValueAt(filaModelo, 3);
+            java.time.LocalDateTime fechaCreacion = null;
+
+            if (fechaObjeto != null && !fechaObjeto.toString().equals("null")) {
+                fechaCreacion = java.time.LocalDateTime.parse(fechaObjeto.toString().replace(" ", "T"));
+            }
+
+            String contrasenaHash = modeloTabla.getValueAt(filaModelo, 4).toString();
+
+            Usuario usuario = new Usuario(
+                    idUsuario,
+                    nombreUsuario,
+                    contrasenaHash,
+                    tipoUsuario,
+                    fechaCreacion);
+
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+            UsuarioFormDialog dialog = new UsuarioFormDialog(ventanaPadre, usuario);
+            dialog.setVisible(true);
+
+            if (dialog.isGuardado()) {
+                cargarUsuarios();
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo abrir el formulario de edición.\n\nDetalle: " + e.getMessage(),
+                    "Error al editar",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -492,8 +547,7 @@ public class UsuarioPanel extends JPanel {
 
             GradientPaint fondo = new GradientPaint(
                     0, 0, new Color(8, 20, 48),
-                    getWidth(), getHeight(), new Color(18, 22, 34)
-            );
+                    getWidth(), getHeight(), new Color(18, 22, 34));
 
             g2.setPaint(fondo);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
@@ -550,8 +604,7 @@ public class UsuarioPanel extends JPanel {
                     thumbBounds.width,
                     thumbBounds.height,
                     10,
-                    10
-            );
+                    10);
 
             g2.dispose();
         }
