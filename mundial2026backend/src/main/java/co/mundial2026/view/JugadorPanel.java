@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableRowSorter;
-import javax.swing.RowFilter;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.util.regex.Pattern;
 import java.util.HashMap;
@@ -56,23 +55,52 @@ public class JugadorPanel extends JPanel {
     }
 
     private void initComponents() {
-        add(crearHeader(), BorderLayout.NORTH);
+        JPanel contenido = new JPanel();
+        contenido.setOpaque(false);
+        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
+        contenido.setBorder(new EmptyBorder(0, 0, 10, 0));
 
-        JPanel centro = new JPanel(new BorderLayout(0, 16));
-        centro.setOpaque(false);
+        JPanel header = crearHeader();
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
+        header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
 
-        centro.add(crearBarraAcciones(), BorderLayout.NORTH);
+        JPanel barraAcciones = crearBarraAcciones();
+        barraAcciones.setAlignmentX(Component.LEFT_ALIGNMENT);
+        barraAcciones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
 
-        JPanel zonaTabla = new JPanel(new BorderLayout(0, 14));
-        zonaTabla.setOpaque(false);
+        JPanel tarjetas = crearTarjetasResumen();
+        tarjetas.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tarjetas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
 
-        zonaTabla.add(crearTarjetasResumen(), BorderLayout.NORTH);
-        zonaTabla.add(crearTabla(), BorderLayout.CENTER);
-        zonaTabla.add(crearBotonesInferiores(), BorderLayout.SOUTH);
+        JPanel tabla = crearTabla();
+        tabla.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tabla.setPreferredSize(new Dimension(0, 430));
+        tabla.setMaximumSize(new Dimension(Integer.MAX_VALUE, 430));
 
-        centro.add(zonaTabla, BorderLayout.CENTER);
+        JPanel botones = crearBotonesInferiores();
+        botones.setAlignmentX(Component.LEFT_ALIGNMENT);
+        botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
-        add(centro, BorderLayout.CENTER);
+        contenido.add(header);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(barraAcciones);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(tarjetas);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(tabla);
+        contenido.add(Box.createVerticalStrut(14));
+        contenido.add(botones);
+
+        JScrollPane scrollPrincipal = new JScrollPane(contenido);
+        scrollPrincipal.setBorder(BorderFactory.createEmptyBorder());
+        scrollPrincipal.getViewport().setBackground(AppTheme.NEGRO_PANEL);
+        scrollPrincipal.setBackground(AppTheme.NEGRO_PANEL);
+        scrollPrincipal.getVerticalScrollBar().setUI(new DarkScrollBarUI());
+        scrollPrincipal.getHorizontalScrollBar().setUI(new DarkScrollBarUI());
+        scrollPrincipal.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
+        scrollPrincipal.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
+
+        add(scrollPrincipal, BorderLayout.CENTER);
     }
 
     private JPanel crearHeader() {
@@ -95,7 +123,8 @@ public class JugadorPanel extends JPanel {
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 32));
         lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblDescripcion = new JLabel("Administra la información deportiva, física y económica de los jugadores registrados.");
+        JLabel lblDescripcion = new JLabel(
+                "Administra la información deportiva, física y económica de los jugadores registrados.");
         lblDescripcion.setForeground(AppTheme.GRIS_TEXTO);
         lblDescripcion.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -324,8 +353,7 @@ public class JugadorPanel extends JPanel {
                     this,
                     "Error al cargar jugadores:\n" + e.getMessage(),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -362,8 +390,7 @@ public class JugadorPanel extends JPanel {
                     this,
                     "Debes seleccionar un jugador para eliminar.",
                     "Sin selección",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -376,8 +403,7 @@ public class JugadorPanel extends JPanel {
                 "¿Seguro que deseas eliminar al jugador " + nombreJugador + "?",
                 "Confirmar eliminación",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+                JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
@@ -387,8 +413,7 @@ public class JugadorPanel extends JPanel {
                         this,
                         "Jugador eliminado correctamente.",
                         "Eliminación exitosa",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+                        JOptionPane.INFORMATION_MESSAGE);
 
                 cargarJugadores();
 
@@ -397,8 +422,7 @@ public class JugadorPanel extends JPanel {
                         this,
                         "Error al eliminar jugador:\n" + e.getMessage(),
                         "Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -411,8 +435,7 @@ public class JugadorPanel extends JPanel {
                     this,
                     "Debes seleccionar un jugador para editar.",
                     "Sin selección",
-                    JOptionPane.WARNING_MESSAGE
-            );
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -421,7 +444,8 @@ public class JugadorPanel extends JPanel {
 
             int idJugador = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
             String nombre = modeloTabla.getValueAt(filaModelo, 1).toString();
-            java.time.LocalDate fechaNacimiento = java.time.LocalDate.parse(modeloTabla.getValueAt(filaModelo, 2).toString());
+            java.time.LocalDate fechaNacimiento = java.time.LocalDate
+                    .parse(modeloTabla.getValueAt(filaModelo, 2).toString());
 
             // Columna 3 es Edad, por eso se salta.
             String posicion = modeloTabla.getValueAt(filaModelo, 4).toString();
@@ -448,8 +472,7 @@ public class JugadorPanel extends JPanel {
                     peso,
                     estatura,
                     valorMercado,
-                    idEquipo
-            );
+                    idEquipo);
 
             JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
 
@@ -465,8 +488,7 @@ public class JugadorPanel extends JPanel {
                     this,
                     "No se pudo abrir el formulario de edición.\n\nDetalle: " + e.getMessage(),
                     "Error al editar",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -498,8 +520,7 @@ public class JugadorPanel extends JPanel {
                     this,
                     "Error al cargar nombres de equipos:\n" + e.getMessage(),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -574,8 +595,7 @@ public class JugadorPanel extends JPanel {
 
             GradientPaint fondo = new GradientPaint(
                     0, 0, new Color(8, 20, 48),
-                    getWidth(), getHeight(), new Color(18, 22, 34)
-            );
+                    getWidth(), getHeight(), new Color(18, 22, 34));
 
             g2.setPaint(fondo);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
@@ -632,8 +652,7 @@ public class JugadorPanel extends JPanel {
                     thumbBounds.width,
                     thumbBounds.height,
                     10,
-                    10
-            );
+                    10);
 
             g2.dispose();
         }

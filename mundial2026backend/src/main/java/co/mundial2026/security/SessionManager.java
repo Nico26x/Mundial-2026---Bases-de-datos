@@ -6,11 +6,10 @@ public class SessionManager {
 
     private static SessionManager instance;
     private Usuario usuarioActual;
+    private int idRegistroBitacora = -1;
 
-    // Constructor privado para asegurarse de que solo haya una instancia
     private SessionManager() {}
 
-    // Obtener la instancia de SessionManager (Singleton)
     public static SessionManager getInstance() {
         if (instance == null) {
             instance = new SessionManager();
@@ -18,22 +17,27 @@ public class SessionManager {
         return instance;
     }
 
-    // Establecer el usuario en sesión
     public void login(Usuario usuario) {
         this.usuarioActual = usuario;
     }
 
-    // Cerrar sesión
     public void logout() {
         this.usuarioActual = null;
+        this.idRegistroBitacora = -1;
     }
 
-    // Obtener el usuario actual
     public Usuario getUsuarioActual() {
         return usuarioActual;
     }
 
-    // Verificar si el usuario tiene el rol adecuado
+    public int getIdRegistroBitacora() {
+        return idRegistroBitacora;
+    }
+
+    public void setIdRegistroBitacora(int idRegistroBitacora) {
+        this.idRegistroBitacora = idRegistroBitacora;
+    }
+
     public boolean tieneRol(String rol) {
         return usuarioActual != null && usuarioActual.getTipoUsuario().equals(rol);
     }

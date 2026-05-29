@@ -1,7 +1,8 @@
 package co.mundial2026.view;
 
-import co.mundial2026.dao.EquipoDAO;
-import co.mundial2026.model.Equipo;
+import co.mundial2026.dao.UsuarioDAO;
+import co.mundial2026.model.Usuario;
+import co.mundial2026.security.SessionManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,34 +12,35 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
-
+import javax.swing.RowFilter;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class EquipoPanel extends JPanel {
+public class UsuarioPanel extends JPanel {
 
-    private JTable tablaEquipos;
+    private JTable tablaUsuarios;
     private DefaultTableModel modeloTabla;
     private TableRowSorter<DefaultTableModel> sorter;
 
     private JTextField txtBuscar;
 
-    private JLabel lblTotalEquipos;
-    private JLabel lblValorPromedio;
-    private JLabel lblConfederaciones;
+    private JLabel lblTotalUsuarios;
+    private JLabel lblAdministradores;
+    private JLabel lblTradicionales;
+    private JLabel lblEsporadicos;
 
-    private final EquipoDAO equipoDAO;
+    private final UsuarioDAO usuarioDAO;
 
-    public EquipoPanel() {
-        this.equipoDAO = new EquipoDAO();
+    public UsuarioPanel() {
+        this.usuarioDAO = new UsuarioDAO();
 
-        setLayout(new BorderLayout(0, 18));
+        setLayout(new BorderLayout());
         setBackground(AppTheme.NEGRO_PANEL);
 
         initComponents();
-        cargarEquipos();
+        cargarUsuarios();
     }
 
     private void initComponents() {
@@ -100,17 +102,17 @@ public class EquipoPanel extends JPanel {
         textos.setOpaque(false);
         textos.setLayout(new BoxLayout(textos, BoxLayout.Y_AXIS));
 
-        JLabel lblEtiqueta = new JLabel("TEAM CENTER");
+        JLabel lblEtiqueta = new JLabel("USER CENTER");
         lblEtiqueta.setForeground(AppTheme.DORADO);
         lblEtiqueta.setFont(new Font("SansSerif", Font.BOLD, 12));
         lblEtiqueta.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblTitulo = new JLabel("Gestión de equipos");
+        JLabel lblTitulo = new JLabel("Gestión de usuarios");
         lblTitulo.setForeground(AppTheme.BLANCO);
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 32));
         lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblDescripcion = new JLabel("Administra selecciones, países, valor total y confederación.");
+        JLabel lblDescripcion = new JLabel("Administra usuarios, roles y accesos del sistema.");
         lblDescripcion.setForeground(AppTheme.GRIS_TEXTO);
         lblDescripcion.setFont(new Font("SansSerif", Font.PLAIN, 14));
         lblDescripcion.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -138,7 +140,7 @@ public class EquipoPanel extends JPanel {
         txtBuscar.setCaretColor(AppTheme.BLANCO);
         txtBuscar.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        JLabel lblBuscar = new JLabel("Buscar equipo");
+        JLabel lblBuscar = new JLabel("Buscar usuario");
         lblBuscar.setForeground(AppTheme.GRIS_TEXTO);
         lblBuscar.setFont(new Font("SansSerif", Font.BOLD, 13));
 
@@ -151,17 +153,17 @@ public class EquipoPanel extends JPanel {
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                filtrarEquipos();
+                filtrarUsuarios();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                filtrarEquipos();
+                filtrarUsuarios();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                filtrarEquipos();
+                filtrarUsuarios();
             }
         });
 
@@ -171,16 +173,18 @@ public class EquipoPanel extends JPanel {
     }
 
     private JPanel crearTarjetasResumen() {
-        JPanel panel = new JPanel(new GridLayout(1, 3, 14, 0));
+        JPanel panel = new JPanel(new GridLayout(1, 4, 14, 0));
         panel.setOpaque(false);
 
-        lblTotalEquipos = new JLabel("0");
-        lblValorPromedio = new JLabel("$0");
-        lblConfederaciones = new JLabel("6");
+        lblTotalUsuarios = new JLabel("0");
+        lblAdministradores = new JLabel("0");
+        lblTradicionales = new JLabel("0");
+        lblEsporadicos = new JLabel("0");
 
-        panel.add(crearTarjetaResumen("Total equipos", lblTotalEquipos));
-        panel.add(crearTarjetaResumen("Valor promedio", lblValorPromedio));
-        panel.add(crearTarjetaResumen("Confederaciones", lblConfederaciones));
+        panel.add(crearTarjetaResumen("Total usuarios", lblTotalUsuarios));
+        panel.add(crearTarjetaResumen("Administradores", lblAdministradores));
+        panel.add(crearTarjetaResumen("Tradicionales", lblTradicionales));
+        panel.add(crearTarjetaResumen("Esporádicos", lblEsporadicos));
 
         return panel;
     }
@@ -213,36 +217,33 @@ public class EquipoPanel extends JPanel {
 
         modeloTabla = new DefaultTableModel();
         modeloTabla.addColumn("ID");
-        modeloTabla.addColumn("Nombre");
-        modeloTabla.addColumn("País");
-        modeloTabla.addColumn("Valor total");
-        modeloTabla.addColumn("Confederación");
-        modeloTabla.addColumn("ID Confederación");
+        modeloTabla.addColumn("Usuario");
+        modeloTabla.addColumn("Rol");
+        modeloTabla.addColumn("Fecha creación");
+        modeloTabla.addColumn("Hash contraseña");
 
-        tablaEquipos = new JTable(modeloTabla);
+        tablaUsuarios = new JTable(modeloTabla);
         sorter = new TableRowSorter<>(modeloTabla);
-        tablaEquipos.setRowSorter(sorter);
+        tablaUsuarios.setRowSorter(sorter);
 
-        tablaEquipos.getColumnModel().getColumn(5).setMinWidth(0);
-        tablaEquipos.getColumnModel().getColumn(5).setMaxWidth(0);
-        tablaEquipos.getColumnModel().getColumn(5).setWidth(0);
+        ocultarColumna(4);
 
-        tablaEquipos.setRowHeight(34);
-        tablaEquipos.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        tablaEquipos.setForeground(AppTheme.BLANCO);
-        tablaEquipos.setBackground(new Color(18, 22, 34));
-        tablaEquipos.setSelectionBackground(AppTheme.DORADO);
-        tablaEquipos.setSelectionForeground(AppTheme.NEGRO_FONDO);
-        tablaEquipos.setGridColor(new Color(45, 50, 62));
-        tablaEquipos.setShowVerticalLines(false);
+        tablaUsuarios.setRowHeight(34);
+        tablaUsuarios.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        tablaUsuarios.setForeground(AppTheme.BLANCO);
+        tablaUsuarios.setBackground(new Color(18, 22, 34));
+        tablaUsuarios.setSelectionBackground(AppTheme.DORADO);
+        tablaUsuarios.setSelectionForeground(AppTheme.NEGRO_FONDO);
+        tablaUsuarios.setGridColor(new Color(45, 50, 62));
+        tablaUsuarios.setShowVerticalLines(false);
 
-        JTableHeader header = tablaEquipos.getTableHeader();
+        JTableHeader header = tablaUsuarios.getTableHeader();
         header.setBackground(new Color(28, 33, 45));
         header.setForeground(AppTheme.BLANCO);
         header.setFont(new Font("SansSerif", Font.BOLD, 13));
         header.setPreferredSize(new Dimension(0, 38));
 
-        JScrollPane scrollPane = new JScrollPane(tablaEquipos);
+        JScrollPane scrollPane = new JScrollPane(tablaUsuarios);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(new Color(18, 22, 34));
         scrollPane.getVerticalScrollBar().setUI(new DarkScrollBarUI());
@@ -255,22 +256,32 @@ public class EquipoPanel extends JPanel {
         return contenedor;
     }
 
+    private void ocultarColumna(int indice) {
+        if (tablaUsuarios.getColumnModel().getColumnCount() > indice) {
+            tablaUsuarios.getColumnModel().getColumn(indice).setMinWidth(0);
+            tablaUsuarios.getColumnModel().getColumn(indice).setMaxWidth(0);
+            tablaUsuarios.getColumnModel().getColumn(indice).setWidth(0);
+        }
+    }
+
     private JPanel crearBotonesInferiores() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
         panel.setOpaque(false);
 
-        RoundedButton btnNuevo = new RoundedButton("+ Nuevo equipo", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
+        RoundedButton btnNuevo = new RoundedButton("+ Nuevo usuario", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
         RoundedButton btnEditar = new RoundedButton("Editar", new Color(38, 47, 66), AppTheme.BLANCO);
         RoundedButton btnEliminar = new RoundedButton("Eliminar", new Color(90, 20, 28), AppTheme.BLANCO);
         RoundedButton btnActualizar = new RoundedButton("Actualizar", AppTheme.DORADO, AppTheme.NEGRO_FONDO);
 
-        btnNuevo.addActionListener(e -> abrirFormularioNuevoEquipo());
+        btnNuevo.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "Aquí conectaremos el formulario de nuevo usuario."));
 
-        btnEditar.addActionListener(e -> editarEquipoSeleccionado());
+        btnEditar.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "Aquí conectaremos editar usuario."));
 
-        btnEliminar.addActionListener(e -> eliminarEquipoSeleccionado());
+        btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
 
-        btnActualizar.addActionListener(e -> cargarEquipos());
+        btnActualizar.addActionListener(e -> cargarUsuarios());
 
         panel.add(btnNuevo);
         panel.add(btnEditar);
@@ -280,159 +291,127 @@ public class EquipoPanel extends JPanel {
         return panel;
     }
 
-    private void cargarEquipos() {
+    private void cargarUsuarios() {
         modeloTabla.setRowCount(0);
 
         try {
-            List<Equipo> equipos = equipoDAO.obtenerEquipos();
+            List<Usuario> usuarios = usuarioDAO.obtenerUsuarios();
 
-            double sumaValores = 0;
+            int admins = 0;
+            int tradicionales = 0;
+            int esporadicos = 0;
 
-            for (Equipo equipo : equipos) {
-                Object[] fila = {
-                        equipo.getIdEquipo(),
-                        equipo.getNombre(),
-                        equipo.getPais(),
-                        formatearValor(equipo.getValorTotalEquipo()),
-                        obtenerNombreConfederacion(equipo.getIdConfederacion()),
-                        equipo.getIdConfederacion()
-                };
+            for (Usuario usuario : usuarios) {
+                String rol = usuario.getTipoUsuario();
 
-                modeloTabla.addRow(fila);
-                sumaValores += equipo.getValorTotalEquipo();
+                if ("Administrador".equalsIgnoreCase(rol)) {
+                    admins++;
+                } else if ("Tradicional".equalsIgnoreCase(rol)) {
+                    tradicionales++;
+                } else if ("Esporadico".equalsIgnoreCase(rol) || "Esporádico".equalsIgnoreCase(rol)) {
+                    esporadicos++;
+                }
+
+                modeloTabla.addRow(new Object[]{
+                        usuario.getIdUsuario(),
+                        usuario.getNombreUsuario(),
+                        usuario.getTipoUsuario(),
+                        usuario.getFechaCreacion(),
+                        usuario.getContrasenaHash()
+                });
             }
 
-            lblTotalEquipos.setText(String.valueOf(equipos.size()));
-
-            if (!equipos.isEmpty()) {
-                double promedio = sumaValores / equipos.size();
-                lblValorPromedio.setText(formatearValor(promedio));
-            } else {
-                lblValorPromedio.setText("$0");
-            }
+            lblTotalUsuarios.setText(String.valueOf(usuarios.size()));
+            lblAdministradores.setText(String.valueOf(admins));
+            lblTradicionales.setText(String.valueOf(tradicionales));
+            lblEsporadicos.setText(String.valueOf(esporadicos));
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Error al cargar equipos:\n" + e.getMessage(),
+                    "Error al cargar usuarios:\n" + e.getMessage(),
                     "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    private void eliminarEquipoSeleccionado() {
-        int filaSeleccionada = tablaEquipos.getSelectedRow();
+    private void eliminarUsuarioSeleccionado() {
+        int filaSeleccionada = tablaUsuarios.getSelectedRow();
 
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Debes seleccionar un equipo para eliminar.",
+                    "Debes seleccionar un usuario para eliminar.",
                     "Sin selección",
-                    JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.WARNING_MESSAGE
+            );
             return;
         }
 
-        int filaModelo = tablaEquipos.convertRowIndexToModel(filaSeleccionada);
-        int idEquipo = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
-        String nombreEquipo = modeloTabla.getValueAt(filaModelo, 1).toString();
+        int filaModelo = tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
+        int idUsuario = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
+        String nombreUsuario = modeloTabla.getValueAt(filaModelo, 1).toString();
+        String rol = modeloTabla.getValueAt(filaModelo, 2).toString();
+
+        Usuario usuarioActual = SessionManager.getInstance().getUsuarioActual();
+
+        if (usuarioActual != null && usuarioActual.getIdUsuario() == idUsuario) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No puedes eliminar el usuario con el que tienes la sesión iniciada.",
+                    "Acción no permitida",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if ("Administrador".equalsIgnoreCase(rol)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se recomienda eliminar el usuario administrador principal.",
+                    "Acción no permitida",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
 
         int confirmacion = JOptionPane.showConfirmDialog(
                 this,
-                "¿Seguro que deseas eliminar el equipo " + nombreEquipo + "?\n\n" +
-                        "Si tiene jugadores asociados, la base de datos no permitirá eliminarlo.",
+                "¿Seguro que deseas eliminar el usuario " + nombreUsuario + "?\n\n" +
+                        "Si tiene registros de bitácora asociados, la base de datos no permitirá eliminarlo.",
                 "Confirmar eliminación",
                 JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
+                JOptionPane.WARNING_MESSAGE
+        );
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
-                equipoDAO.eliminarEquipo(idEquipo);
+                usuarioDAO.eliminarUsuario(idUsuario);
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Equipo eliminado correctamente.",
+                        "Usuario eliminado correctamente.",
                         "Eliminación exitosa",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.INFORMATION_MESSAGE
+                );
 
-                cargarEquipos();
+                cargarUsuarios();
 
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(
                         this,
-                        "No se pudo eliminar el equipo.\n\n" +
-                                "Es posible que tenga jugadores, partidos o registros asociados.\n\n" +
+                        "No se pudo eliminar el usuario.\n\n" +
+                                "Es posible que tenga registros de bitácora asociados.\n\n" +
                                 "Detalle: " + e.getMessage(),
                         "Error al eliminar",
-                        JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
 
-    private void abrirFormularioNuevoEquipo() {
-        JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-        EquipoFormDialog dialog = new EquipoFormDialog(ventanaPadre);
-        dialog.setVisible(true);
-
-        if (dialog.isGuardado()) {
-            cargarEquipos();
-        }
-    }
-
-    private void editarEquipoSeleccionado() {
-        int filaSeleccionada = tablaEquipos.getSelectedRow();
-
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Debes seleccionar un equipo para editar.",
-                    "Sin selección",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        try {
-            int filaModelo = tablaEquipos.convertRowIndexToModel(filaSeleccionada);
-
-            int idEquipo = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 0).toString());
-            String nombre = modeloTabla.getValueAt(filaModelo, 1).toString();
-            String pais = modeloTabla.getValueAt(filaModelo, 2).toString();
-
-            String valorTexto = modeloTabla.getValueAt(filaModelo, 3).toString()
-                    .replace("$", "")
-                    .replace(",", "")
-                    .replace(".", "")
-                    .trim();
-
-            double valorTotal = Double.parseDouble(valorTexto);
-            int idConfederacion = Integer.parseInt(modeloTabla.getValueAt(filaModelo, 5).toString());
-
-            Equipo equipo = new Equipo(
-                    idEquipo,
-                    nombre,
-                    pais,
-                    valorTotal,
-                    idConfederacion);
-
-            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-
-            EquipoFormDialog dialog = new EquipoFormDialog(ventanaPadre, equipo);
-            dialog.setVisible(true);
-
-            if (dialog.isGuardado()) {
-                cargarEquipos();
-            }
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo abrir el formulario de edición.\n\nDetalle: " + e.getMessage(),
-                    "Error al editar",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void filtrarEquipos() {
+    private void filtrarUsuarios() {
         String texto = txtBuscar.getText().trim();
 
         if (sorter == null) {
@@ -442,31 +421,8 @@ public class EquipoPanel extends JPanel {
         if (texto.isEmpty()) {
             sorter.setRowFilter(null);
         } else {
-            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(texto), 1));
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(texto)));
         }
-    }
-
-    private String obtenerNombreConfederacion(int idConfederacion) {
-        switch (idConfederacion) {
-            case 1:
-                return "UEFA";
-            case 2:
-                return "CONMEBOL";
-            case 3:
-                return "CONCACAF";
-            case 4:
-                return "CAF";
-            case 5:
-                return "AFC";
-            case 6:
-                return "OFC";
-            default:
-                return "Confederación " + idConfederacion;
-        }
-    }
-
-    private String formatearValor(double valor) {
-        return "$" + String.format("%,.0f", valor);
     }
 
     private static class RoundedPanel extends JPanel {
@@ -536,7 +492,8 @@ public class EquipoPanel extends JPanel {
 
             GradientPaint fondo = new GradientPaint(
                     0, 0, new Color(8, 20, 48),
-                    getWidth(), getHeight(), new Color(18, 22, 34));
+                    getWidth(), getHeight(), new Color(18, 22, 34)
+            );
 
             g2.setPaint(fondo);
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), arc, arc);
@@ -593,7 +550,8 @@ public class EquipoPanel extends JPanel {
                     thumbBounds.width,
                     thumbBounds.height,
                     10,
-                    10);
+                    10
+            );
 
             g2.dispose();
         }

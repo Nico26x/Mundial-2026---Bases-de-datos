@@ -51,23 +51,52 @@ public class PartidoPanel extends JPanel {
     }
 
     private void initComponents() {
-        add(crearHeader(), BorderLayout.NORTH);
+        JPanel contenido = new JPanel();
+        contenido.setOpaque(false);
+        contenido.setLayout(new BoxLayout(contenido, BoxLayout.Y_AXIS));
+        contenido.setBorder(new EmptyBorder(0, 0, 10, 0));
 
-        JPanel centro = new JPanel(new BorderLayout(0, 16));
-        centro.setOpaque(false);
+        JPanel header = crearHeader();
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
+        header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 155));
 
-        centro.add(crearBarraAcciones(), BorderLayout.NORTH);
+        JPanel barraAcciones = crearBarraAcciones();
+        barraAcciones.setAlignmentX(Component.LEFT_ALIGNMENT);
+        barraAcciones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
 
-        JPanel zonaTabla = new JPanel(new BorderLayout(0, 14));
-        zonaTabla.setOpaque(false);
+        JPanel tarjetas = crearTarjetasResumen();
+        tarjetas.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tarjetas.setMaximumSize(new Dimension(Integer.MAX_VALUE, 110));
 
-        zonaTabla.add(crearTarjetasResumen(), BorderLayout.NORTH);
-        zonaTabla.add(crearTabla(), BorderLayout.CENTER);
-        zonaTabla.add(crearBotonesInferiores(), BorderLayout.SOUTH);
+        JPanel tabla = crearTabla();
+        tabla.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tabla.setPreferredSize(new Dimension(0, 430));
+        tabla.setMaximumSize(new Dimension(Integer.MAX_VALUE, 430));
 
-        centro.add(zonaTabla, BorderLayout.CENTER);
+        JPanel botones = crearBotonesInferiores();
+        botones.setAlignmentX(Component.LEFT_ALIGNMENT);
+        botones.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
-        add(centro, BorderLayout.CENTER);
+        contenido.add(header);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(barraAcciones);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(tarjetas);
+        contenido.add(Box.createVerticalStrut(16));
+        contenido.add(tabla);
+        contenido.add(Box.createVerticalStrut(14));
+        contenido.add(botones);
+
+        JScrollPane scrollPrincipal = new JScrollPane(contenido);
+        scrollPrincipal.setBorder(BorderFactory.createEmptyBorder());
+        scrollPrincipal.getViewport().setBackground(AppTheme.NEGRO_PANEL);
+        scrollPrincipal.setBackground(AppTheme.NEGRO_PANEL);
+        scrollPrincipal.getVerticalScrollBar().setUI(new DarkScrollBarUI());
+        scrollPrincipal.getHorizontalScrollBar().setUI(new DarkScrollBarUI());
+        scrollPrincipal.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
+        scrollPrincipal.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
+
+        add(scrollPrincipal, BorderLayout.CENTER);
     }
 
     private JPanel crearHeader() {

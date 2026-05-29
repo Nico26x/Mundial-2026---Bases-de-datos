@@ -87,14 +87,11 @@ public class MainFrame extends JFrame {
 
         btnPartidos.addActionListener(e -> mostrarVista("Partidos", "Gestión de partidos", new PartidoPanel()));
 
-        btnConsultas.addActionListener(
-                e -> mostrarVista("Consultas", "Consultas del sistema", crearPlaceholderPanel("Consultas")));
+        btnConsultas.addActionListener(e -> mostrarVista("Consultas", "Consultas del sistema", new ConsultaPanel()));
 
-        btnReportes.addActionListener(
-                e -> mostrarVista("Reportes", "Reportes del sistema", crearPlaceholderPanel("Reportes")));
+        btnReportes.addActionListener(e -> mostrarVista("Reportes", "Reportes del sistema", new ReportePanel()));
 
-        btnUsuarios.addActionListener(
-                e -> mostrarVista("Usuarios", "Administración de usuarios", crearPlaceholderPanel("Usuarios")));
+        btnUsuarios.addActionListener(e -> mostrarVista("Usuarios", "Gestión de usuarios", new UsuarioPanel()));
 
         btnEquipos.addActionListener(e -> mostrarVista("Equipos", "Gestión de equipos", new EquipoPanel()));
 
@@ -435,6 +432,7 @@ public class MainFrame extends JFrame {
                 JOptionPane.YES_NO_OPTION);
 
         if (opcion == JOptionPane.YES_OPTION) {
+            authService.cerrarSesion();
             dispose();
             new LoginFrame().setVisible(true);
         }
